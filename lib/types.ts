@@ -19,3 +19,15 @@ export interface CollectionPatchBody {
   stock?: number;
   price?: number;
 }
+
+export interface BidBody {
+  userId: string;
+  price: number;
+}
+
+export interface BidPatchBody {
+  price?: number;
+}
+
+import type { Collection, Bid } from '@/prisma/generated/prisma/client';
+export type CollectionWithBids = Collection & { bids: Bid[] };

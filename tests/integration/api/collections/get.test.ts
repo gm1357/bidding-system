@@ -1,7 +1,15 @@
 import { waitForServer } from '@/tests/test-helpers';
 
+const BASE_URL = 'http://localhost:3000';
+
+let userId: string;
+
 beforeAll(async () => {
   await waitForServer();
+
+  const usersRes = await fetch(`${BASE_URL}/api/users`);
+  const users = await usersRes.json();
+  userId = users[0].id;
 });
 
 describe('GET /api/collections', () => {
@@ -124,5 +132,61 @@ describe('GET /api/collections', () => {
       total: resBodyBefore.total,
       totalPages: resBodyBefore.totalPages,
     });
+  });
+
+  it('Should include a bids array on each collection', async () => {
+    const res = await fetch(`${BASE_URL}/api/collections`);
+    const resBody = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(resBody.data.length).toBeGreaterThan(0);
+    resBody.data.forEach((collection: { bids: unknown }) => {
+      expect(Array.isArray(collection.bids)).toBe(true);
+    });
+  });
+
+  it('Should exclude soft-deleted bids from the bids array', async () => {
+    const collectionRes = await fetch(`${BASE_URL}/api/collections`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Bids Filter Test Collection',
+        description: 'Test for bid filtering',
+        stock: 5,
+        price: 2000,
+      }),
+    });
+    const collection = await collectionRes.json();
+
+    const bidRes = await fetch(
+      `${BASE_URL}/api/collections/${collection.id}/bid`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, price: 500 }),
+      },
+    );
+    const bid = await bidRes.json();
+
+    await fetch(`${BASE_URL}/api/bids/${bid.id}`, { method: 'DELETE' });
+
+    const res = await fetch(`${BASE_URL}/api/collections?pageSize=100&page=1`);
+    const resBody = await res.json();
+
+    const found = resBody.data.find(
+      (c: { id: string }) => c.id === collection.id,
+    );
+
+    // Clean up
+    await fetch(`${BASE_URL}/api/collections/${collection.id}`, {
+      method: 'DELETE',
+    });
+
+    expect(found).toBeDefined();
+    expect(
+      (found as { bids: { id: string }[] }).bids.find(
+        (b: { id: string }) => b.id === bid.id,
+      ),
+    ).toBeUndefined();
   });
 });
