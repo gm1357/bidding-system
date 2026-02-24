@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import type { PaginatedResponse } from '@/lib/types';
-import { Collection } from '@/prisma/generated/prisma/client';
+import type { PaginatedResponse, CollectionWithBids } from '@/lib/types';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
@@ -22,13 +21,16 @@ export async function GET(request: NextRequest) {
   const [collections, total] = await Promise.all([
     prisma.collection.findMany({
       where: { deletedAt: null },
+      include: {
+        bids: { where: { deletedAt: null }, orderBy: { createdAt: 'asc' } },
+      },
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
     prisma.collection.count({ where: { deletedAt: null } }),
   ]);
 
-  const response: PaginatedResponse<Collection> = {
+  const response: PaginatedResponse<CollectionWithBids> = {
     data: collections,
     page,
     pageSize,
