@@ -24,6 +24,35 @@ async function main() {
     });
   }
   console.log('Collections created successfully!');
+
+  console.log('Creating users...');
+  for (let i = 0; i < 10; i++) {
+    await prisma.user.create({
+      data: {
+        name: faker.person.firstName(),
+        email: faker.internet.email(),
+      },
+    });
+  }
+  console.log('Users created successfully!');
+
+  console.log('Fetching collections and users...');
+  const collections = await prisma.collection.findMany();
+  const users = await prisma.user.findMany();
+
+  console.log('Creating bids...');
+  for (const collection of collections) {
+    for (let i = 0; i < 10; i++) {
+      await prisma.bid.create({
+        data: {
+          collectionId: collection.id,
+          userId: users[i].id,
+          price: faker.number.int({ min: 500, max: 100000 }),
+        },
+      });
+    }
+  }
+  console.log('Bids created successfully!');
 }
 
 main()
