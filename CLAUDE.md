@@ -48,12 +48,21 @@ app/
   layout.tsx              # Root layout (Geist font, global metadata)
   page.tsx                # Home page
   api/
-    status/route.ts       # GET /api/status — health check used by tests
-    collections/route.ts  # GET /api/collections — paginated collection listing
+    status/route.ts                   # GET /api/status — health check used by tests
+    collections/
+      route.ts                        # GET /api/collections, POST /api/collections
+      [id]/
+        route.ts                      # PATCH /api/collections/:id, DELETE /api/collections/:id
+        bid/route.ts                  # POST /api/collections/:id/bid
+    bids/[id]/
+      route.ts                        # GET /api/bids/:id, PATCH /api/bids/:id, DELETE /api/bids/:id
+      accept/route.ts                 # POST /api/bids/:id/accept
+      reject/route.ts                 # POST /api/bids/:id/reject
+    users/route.ts                    # GET /api/users
 
 lib/
   prisma.ts               # Singleton PrismaClient (PrismaPg adapter, cached on globalThis in dev)
-  types.ts                # Shared TypeScript types (e.g. PaginatedResponse<T>)
+  types.ts                # Shared TypeScript types (PaginatedResponse<T>, CollectionWithBids, body interfaces)
 
 tests/
   test-helpers.ts         # waitForServer() — polls /api/status before test suites run
@@ -61,7 +70,7 @@ tests/
 
 prisma/
   schema.prisma           # DB schema (output → ./generated/prisma)
-  seed.ts                 # Seeds 100 fake Collection records via faker
+  seed.ts                 # Seeds fake records via faker
   migrations/             # SQL migration history
   generated/prisma/       # Auto-generated Prisma client — never edit manually
 ```
@@ -89,11 +98,20 @@ To run tests locally: start the server (`npm run dev`), ensure the DB is seeded 
 
 ### Current data model
 
-| Model        | Key fields                                                                       |
-|--------------|----------------------------------------------------------------------------------|
-| `Collection` | `id` (UUID), `name`, `description`, `stock`, `price` (int cents), `createdAt`, `updatedAt`, `deletedAt?` |
+| Model        | Key fields                                                                                                          |
+|--------------|---------------------------------------------------------------------------------------------------------------------|
+| `Collection` | `id` (UUID), `name`, `description`, `stock`, `price` (int cents), `createdAt`, `updatedAt`, `deletedAt?`           |
+| `User`       | `id` (UUID), `name`, `email` (unique), `createdAt`, `updatedAt`, `deletedAt?`                                      |
+| `Bid`        | `id` (UUID), `collectionId`, `userId`, `price` (int cents), `status` (`PENDING`\|`ACCEPTED`\|`REJECTED`), `createdAt`, `updatedAt`, `deletedAt?` |
 
-Soft-deletes are supported via `deletedAt` (nullable).
+Soft-deletes are supported via `deletedAt` (nullable) on all models.
+
+### Bid lifecycle
+
+- Bids are created via `POST /api/collections/:id/bid` with `{ userId, price }` and start as `PENDING`.
+- Only `PENDING` bids can be updated (price only) or soft-deleted.
+- `POST /api/bids/:id/accept` runs a transaction: sets the bid to `ACCEPTED` and auto-rejects all other `PENDING` bids on the same collection.
+- `POST /api/bids/:id/reject` sets the bid to `REJECTED`; cannot reject an already-accepted bid.
 
 ### Pagination
 
