@@ -1,3 +1,9 @@
+import { waitForServer } from '@/tests/test-helpers';
+
+beforeAll(async () => {
+  await waitForServer();
+});
+
 describe('GET /api/collections', () => {
   it('Should return the first page of collections when no pagination params are provided', async () => {
     const res = await fetch(`http://localhost:3000/api/collections`);
