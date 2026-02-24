@@ -10,9 +10,7 @@
     "lint:fix": "eslint --fix",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
-    "prepare": "husky",
     "commitlint": "commitlint --edit",
-    "commit": "cz",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
@@ -20,7 +18,10 @@
     "prisma:format": "prisma format",
     "prisma:validate": "prisma validate",
     "prisma:seed": "prisma db seed",
-    "prisma:reset": "prisma migrate reset"
+    "prisma:reset": "prisma migrate reset",
+    "commit": "cz",
+    "prepare": "husky",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.1",
