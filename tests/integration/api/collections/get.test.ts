@@ -94,4 +94,35 @@ describe('GET /api/collections', () => {
       totalPages: resBody.totalPages,
     });
   });
+
+  it('Should return only non-deleted collections', async () => {
+    const resBefore = await fetch(`http://localhost:3000/api/collections`);
+    const resBodyBefore = await resBefore.json();
+
+    const resCreate = await fetch(`http://localhost:3000/api/collections`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Deleted Collection',
+        description: 'A deleted collection',
+        stock: 10,
+        price: 1999,
+      }),
+    });
+    const resBodyCreate = await resCreate.json();
+    await fetch(`http://localhost:3000/api/collections/${resBodyCreate.id}`, {
+      method: 'DELETE',
+    });
+    const resAfter = await fetch(`http://localhost:3000/api/collections`);
+    const resBodyAfter = await resAfter.json();
+
+    expect(resAfter.status).toBe(200);
+    expect(resBodyAfter).toEqual({
+      data: resBodyBefore.data,
+      page: 1,
+      pageSize: 10,
+      total: resBodyBefore.total,
+      totalPages: resBodyBefore.totalPages,
+    });
+  });
 });

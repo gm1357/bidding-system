@@ -5,3 +5,17 @@ export interface PaginatedResponse<T> {
   total: number;
   totalPages: number;
 }
+
+export interface CollectionBody {
+  name: string;
+  description: string;
+  stock: number;
+  price: number;
+}
+
+export interface CollectionPatchBody {
+  name?: string;
+  description?: string;
+  stock?: number;
+  price?: number;
+}
