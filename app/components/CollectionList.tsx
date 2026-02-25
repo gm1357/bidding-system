@@ -6,6 +6,7 @@ import CollectionRow from './CollectionRow';
 interface CollectionListProps {
   collections: CollectionWithBids[];
   users: User[];
+  selectedUserId: string;
   hasMore: boolean;
   isLoading: boolean;
   onLoadMore: () => void;
@@ -16,6 +17,7 @@ interface CollectionListProps {
 export default function CollectionList({
   collections,
   users,
+  selectedUserId,
   hasMore,
   isLoading,
   onLoadMore,
@@ -44,6 +46,7 @@ export default function CollectionList({
           key={collection.id}
           collection={collection}
           users={users}
+          selectedUserId={selectedUserId}
           onPlaceBid={() => onPlaceBid(collection.id)}
           onMutated={onMutated}
         />

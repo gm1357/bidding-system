@@ -75,6 +75,7 @@ export default function HomePage() {
         <CollectionList
           collections={collections}
           users={users}
+          selectedUserId={selectedUserId}
           hasMore={hasMore}
           isLoading={isLoading}
           onLoadMore={loadMore}

@@ -5,6 +5,7 @@ import BidRow from './BidRow';
 interface CollectionRowProps {
   collection: CollectionWithBids;
   users: User[];
+  selectedUserId: string;
   onPlaceBid: () => void;
   onMutated: () => void;
 }
@@ -12,9 +13,12 @@ interface CollectionRowProps {
 export default function CollectionRow({
   collection,
   users,
+  selectedUserId,
   onPlaceBid,
   onMutated,
 }: CollectionRowProps) {
+  const hasAcceptedBid = collection.bids.some(b => b.status === 'ACCEPTED');
+
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
       <div className="flex items-start justify-between gap-4">
@@ -40,12 +44,14 @@ export default function CollectionRow({
             </span>
           </div>
         </div>
-        <button
-          onClick={onPlaceBid}
-          className="shrink-0 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Place Bid
-        </button>
+        {!hasAcceptedBid && (
+          <button
+            onClick={onPlaceBid}
+            className="shrink-0 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Place Bid
+          </button>
+        )}
       </div>
 
       {collection.bids.length > 0 && (
@@ -58,6 +64,7 @@ export default function CollectionRow({
               key={bid.id}
               bid={bid}
               users={users}
+              selectedUserId={selectedUserId}
               onMutated={onMutated}
             />
           ))}
