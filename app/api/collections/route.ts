@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
       include: {
         bids: { where: { deletedAt: null }, orderBy: { createdAt: 'asc' } },
       },
+      orderBy: { createdAt: 'desc' },
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
