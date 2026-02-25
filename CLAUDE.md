@@ -46,7 +46,14 @@ Node version is pinned in `.nvmrc` (`lts/krypton`).
 ```
 app/
   layout.tsx              # Root layout (Geist font, global metadata)
-  page.tsx                # Home page
+  page.tsx                # Home page ('use client' — manages all UI state)
+  components/
+    Header.tsx            # User selector + "Create Collection" button
+    CollectionList.tsx    # Infinite-scroll list, delegates to CollectionRow
+    CollectionRow.tsx     # Single collection card with bid actions
+    BidRow.tsx            # Single bid row with accept/reject controls
+    CreateCollectionModal.tsx
+    PlaceBidModal.tsx
   api/
     status/route.ts                   # GET /api/status — health check used by tests
     collections/
